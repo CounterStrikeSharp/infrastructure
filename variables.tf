@@ -1,4 +1,4 @@
-variable "GITHUB_TOKEN" {
+variable "GH_TOKEN" {
   type        = string
   description = "GitHub personal access token for infrastructure repo"
   sensitive   = true

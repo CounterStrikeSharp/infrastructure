@@ -10,7 +10,7 @@ terraform {
 # Configure the GitHub Provider
 provider "github" {
   owner = "CounterStrikeSharp"
-  token = var.GITHUB_TOKEN
+  token = var.GH_TOKEN
 }
 
 resource "github_repository" "infrastructure" {
