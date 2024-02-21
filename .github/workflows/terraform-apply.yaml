@@ -69,7 +69,7 @@ jobs:
       if: github.ref == 'refs/heads/main'
       env:
         PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-      run:
+      run: |
         export PASSWORD=$(echo "$PRIVATE_KEY" | openssl dgst -sha256)
         openssl enc -aes-256-cbc -salt -in terraform.tfstate -out terraform.tfstate.enc -pass env:PASSWORD -pbkdf2
 
