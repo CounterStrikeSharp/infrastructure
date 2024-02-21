@@ -4,7 +4,7 @@ on:
   # Trigger the workflow (e.g., on push to main)
   push:
     branches: [ main ]
-    paths: ["*.tf", "*.yaml"]
+    paths: ["*.tf", "**/*.yaml"]
   schedule:
     - cron: "0 0 1 */2 *"
 
