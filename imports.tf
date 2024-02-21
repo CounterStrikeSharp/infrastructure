@@ -10,7 +10,7 @@ import {
 
 import {
   id = "infrastructure/PRIVATE_KEY"
-  to = github_actions_secret.gh_token
+  to = github_actions_secret.private_key
 }
 
 import {
