@@ -18,6 +18,8 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Download state file
+      env:
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       run: |
         latest_artifact=$(curl -s -H "Accept: application/vnd.github+json" \
         -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}" \
