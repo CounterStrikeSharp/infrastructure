@@ -51,3 +51,4 @@ resource "github_actions_secret" "gh_token" {
   repository  = "infrastructure"
   secret_name = "GH_TOKEN"
 }
+
