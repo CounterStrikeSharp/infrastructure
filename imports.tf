@@ -9,6 +9,11 @@ import {
 }
 
 import {
+  id = "infrastructure/PRIVATE_KEY"
+  to = github_actions_secret.gh_token
+}
+
+import {
   id = "infrastructure:main"
   to = github_branch_protection.infrastructure
 }
