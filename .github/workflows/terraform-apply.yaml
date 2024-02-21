@@ -1,0 +1,84 @@
+name: Terraform Apply
+
+on: 
+  # Trigger the workflow (e.g., on push to main)
+  push:
+    branches: [ main ]
+    paths: ["*.tf"]
+  schedule:
+    - cron: "0 0 1 */2 *"
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TF_VAR_GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download state file
+      run: |
+        latest_artifact=$(curl -s -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/CounterStrikeSharp/infrastructure/actions/artifacts?name=terraform-state | jq -r 'artifacts[0].id')
+
+        if [ $latest_artifact != "null" ]; then
+          curl -LJO -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/CounterStrikeSharp/infrastructure/actions/artifacts/$latest_artifact/zip
+          unzip -o terraform-state.zip
+          export PASSWORD=$(echo "$PRIVATE_KEY" | openssl dgst -sha256)
+          openssl enc -d -aes-256-cbc -salt -in terraform.tfstate.enc -out terraform.tfstate -pass env:PASSWORD -pbkdf2
+        fi
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform init
+      continue-on-error: true
+      run: terraform init
+
+    - name: Terraform validate
+      run: terraform validate
+
+    - name: Terraform plan
+      id: plan
+      run: terraform plan -out workspace.plan
+
+    - name: Comment plan
+      if: github.ref != 'refs/heads/main' && (steps.plan.outcome == 'success' || steps.plan.outcome == 'failure')
+      uses: Jimdo/terraform-pr-commenter@main
+      with:
+        commenter_type: plan
+        commenter_input: ${{ format('{0}{1}', steps.plan.outputs.stdout, steps.plan.outputs.stderr) }}
+        commenter_exitcode: ${{ steps.plan.outputs.exitcode }}
+
+    - name: Terraform apply
+      id: apply
+      if: github.ref == 'refs/heads/main'
+      continue-on-error: true
+      run: terraform apply workspace.plan >> apply.log
+
+    - name: Encrypt state file
+      if: github.ref == 'refs/heads/main'
+      env:
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      run:
+        export PASSWORD=$(echo "$PRIVATE_KEY" | openssl dgst -sha256)
+        openssl enc -aes-256-cbc -salt -in terraform.tfstate -out terraform.tfstate.enc -pass env:PASSWORD -pbkdf2
+
+    - name: Upload state file
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-state
+        path: terraform.tfstate.enc
+
+    - name: Terraform apply result
+      if: github.ref == 'refs/heads/main'
+      run: |
+        cat apply.log
+        exit ${{ steps.apply.outputs.exitcode }}
