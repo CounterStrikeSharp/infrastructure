@@ -66,7 +66,7 @@ resource "github_repository" "docs" {
   allow_rebase_merge     = false
   delete_branch_on_merge = true
 
-  description = "Docs Site for CounterStrikeSharps"
+  description = "Docs Site for CounterStrikeSharp"
 
   has_issues = true
 
