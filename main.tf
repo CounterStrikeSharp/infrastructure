@@ -92,7 +92,7 @@ resource "github_branch_protection" "docs" {
 }
 
 resource "github_repository" "gdc" {
-  name       = "GDC"
+  name       = "GamedataChecker"
   visibility = "public"
 
   allow_auto_merge       = true
@@ -100,7 +100,7 @@ resource "github_repository" "gdc" {
   allow_rebase_merge     = false
   delete_branch_on_merge = true
 
-  description = "GDC for CounterStrikeSharp"
+  description = "Gamedata Checker for CounterStrikeSharp"
 
   has_issues = true
 
@@ -111,7 +111,7 @@ resource "github_repository" "gdc" {
 resource "github_branch_protection" "gdc" {
   repository_id        = github_repository.gdc.id
   pattern              = "main"
-  force_push_bypassers = ["/roflmuffin"]
+  force_push_bypassers = ["/roflmuffin", "/KillStr3aK"]
   push_restrictions    = []
 
   required_pull_request_reviews {
